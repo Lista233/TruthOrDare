@@ -1,0 +1,219 @@
+<template>
+	<view class="demo3">
+		<navigator open-type="navigateBack" animation-type="pop-out" url='/pages/index/index' class="Exit"><text selectable="false" class="ExitText" >< 返回</text></navigator>
+       <scroll-view class="showscrollview" scroll-y="true">
+		  <view class="showview" v-for="(item,index) in wordList">
+			  <input class="textbox" :value="item" @input="(res:UniInputConfirmEvent)=> changeword(res,index)" >  </input>
+			  <text class="textboxdel" @click="del(index)"> 删除 </text>
+		  </view>
+	   </scroll-view>
+	   <view class="inputbox">
+	   	 <input class="showinput" placeholder="请输入添加的内容" v-model="addword" adjust-position="true"></input>
+		 <button class="subbtn" @click="add(addword)"  >添加</button>
+	   </view>
+	   <view class="Save" @click="save()"><text class="SaveText">保存</text></view>
+	   <view class="sel" @click="showList()"><text class="selText">当前列表:{{curshow}}</text></view>
+	</view>
+</template>
+
+<script setup>
+	//uni.clearStorageSync()
+	let keylist=uni.getStorageInfoSync().keys;
+	let curshow=ref(keylist[0])
+	let list=uni.getStorageSync(curshow.value) as Array<string>
+	let wordList=ref(list)
+	let addword=ref('')
+	let audio=uni.createInnerAudioContext();
+//console.log(list)
+function changeword(res:UniInputConfirmEvent,index:number)
+{
+	wordList.value[index]=res.detail.value;
+	uni.setStorageSync(curshow.value,wordList.value)
+	uni.showToast({
+	          title: "修改成功",
+			  icon:'none',
+			  position:'bottom'
+	        })
+}
+function add(word:string)
+{
+	
+	if(word.trim().length === 0)
+	{
+		uni.showToast({
+		          title: "输入内容不能为空",
+				  icon:'none',
+				  position:'bottom'
+		        })
+		return;
+	}
+	wordList.value.push(word)
+	uni.setStorageSync(curshow.value,wordList.value)
+	uni.showToast({
+	          title: "添加成功",
+			  icon:'none',
+			  position:'bottom'
+	        })
+	addword.value='';
+}
+function del(index:number)
+{
+	wordList.value.splice(index,1)
+	uni.showToast({
+	          title: "为防止误删，保存后删除生效",
+			  icon:'none',
+			  position:'bottom'
+	        })
+}
+function save()
+{
+	
+	uni.setStorageSync(curshow.value,wordList.value)
+	console.log("保存成功")
+	uni.showToast({
+	          title: "保存成功",
+			  icon:'none',
+			  position:'bottom'
+	        })
+}
+function showList()
+{
+	
+	let op:ShowActionSheetOptions={
+	  //title:'词条选项',
+	  itemList:keylist,
+	  success:(res)=>{
+		  curshow.value=keylist[res.tapIndex!]
+		  wordList.value=uni.getStorageSync(curshow.value) as Array<string>
+	  }
+	  
+	}
+	uni.showActionSheet(op);
+}
+</script>
+
+<style lang="scss" scoped>
+	@font-face {
+	  font-family: '像素字';
+	  src:url('../static/锐字太空奇遇像素.ttf');
+	}
+.demo3{
+	height:100%;
+	width: 100%;
+	  background: linear-gradient(to bottom,#000000, #1A1A1A); 
+	  display: flex;
+	  align-items: center;
+	  justify-content: center;
+	  z-index: -1;
+	  
+	  .Exit{
+		  z-index: 1;
+		  position: fixed;
+		  //background-color: firebrick;
+		  margin-left:5% ;
+		  margin-top:3%;
+		  width: 100px;
+		  height: 50px;
+		  .ExitText{
+			  font-family: '像素字';
+			  color: white;
+			  font-size: 30px;
+			  text-align: left;
+		  }
+		
+		  z-index: 200;
+	  }
+	   .Save{
+		  z-index: 1;
+		  position: fixed;
+		  //background-color: firebrick;
+		  right:8% ;
+		  margin-top:3%;
+		  width: 100px;
+		  height: 50px;
+		  .SaveText{
+			  font-family: '像素字';
+			  color: white;
+			  font-size: 30px;
+			  text-align: center;
+		  }
+	  }
+	  .sel{
+	  		  z-index: 1;
+	  		  position: fixed;
+	  		  //background-color: firebrick;
+	  		  right:35% ;
+	  		  margin-top:3%;
+	  		  width: 300px;
+	  		  height: 50px;
+	  		  .selText{
+	  			  font-family: '像素字';
+	  			  color: white;
+	  			  font-size: 30px;
+	  			  text-align: center;
+	  		  }
+	  }
+   .showview{
+	  // maxheight: 200px;
+	   border-bottom:2px solid #1A1A1A;
+	   width: 100%;
+	   background-color: white;
+	   display: flex;
+	   flex-direction: row;
+	   position: relative;
+	   
+	   .textbox{
+		   flex:1;
+		   text-align: left;
+		   font-family: '像素字';
+		   font-size: 25px;
+	   }
+	   .textboxdel{
+		   //height: 100%;
+		    border-left:2px solid #000000;
+	   		text-align:right;
+			
+	   		   font-family: '像素字';
+	   		   font-size: 30px;
+			   color: red;
+	   }
+   }
+   .showscrollview{
+	   margin-top: 5%;
+   	   height: 57%;
+   	   width: 80%;
+   	   background-color: white;
+	   position: relative;
+   }
+   .inputbox{
+
+	
+	   margin-top:3%;
+	   width: 80%;
+	   display: flex;
+	   flex-direction: row;
+	
+	   height: 60px;
+	   //background-color: blue;
+	   .showinput{
+		   height: 100%;
+		   width: 84%;
+		   margin-right:2% ;
+		   text-align: left;
+		   background-color: wheat;
+		   font-family: '像素字';
+		
+	   }
+	   .subbtn{
+		   font-family: '像素字';
+		   height: 100%;
+		   width: 15%;
+		   background-color: blue;
+		   padding: 7px;
+		   color: white;
+		   box-sizing: border-box;
+		   
+	   }
+   }
+}
+</style>

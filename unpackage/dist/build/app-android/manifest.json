@@ -1,0 +1,39 @@
+{
+  "id": "__UNI__00DFA61",
+  "name": "TruthOrDare",
+  "description": "真心话大冒险模拟器",
+  "version": {
+    "name": "1.1.0",
+    "code": 110
+  },
+  "uni-app-x": {
+    "compilerVersion": "4.45"
+  },
+  "app": {
+    "distribute": {
+      "icons": {
+        "android": {
+          "hdpi": "unpackage/res/icons/72x72.png",
+          "xhdpi": "unpackage/res/icons/96x96.png",
+          "xxhdpi": "unpackage/res/icons/144x144.png",
+          "xxxhdpi": "unpackage/res/icons/192x192.png"
+        },
+        "ios": {
+          "appstore": "unpackage/res/icons/1024x1024.png"
+        }
+      },
+      "_uni-app-x_": {
+        "pageOrientation": "landscape"
+      },
+      "globalStyle": {
+        "pageOrientation": "landscape"
+      },
+      "modules": {
+        "uni-storage": {},
+        "uni-prompt": {},
+        "uni-exit": {},
+        "uni-createInnerAudioContext": {}
+      }
+    }
+  }
+}

@@ -1,0 +1,180 @@
+<template>
+	<view class="timer">
+		<navigator open-type="navigateBack" animation-type="pop-out" url='/pages/index/index' class="Exit"><text selectable="false" class="ExitText" >< 返回</text></navigator>
+		<text @click="start()" class="timertext"> {{showsec}}:{{showmsec}}</text>
+		<text @click="changeTime()" class="settimertext"> 设置时间</text>
+	</view>
+</template>
+
+<script setup>
+	function padWithZeros(num:number, length:number) {
+	    let numStr = num.toString();
+	    let zerosToPad = length - numStr.length;
+	    if (zerosToPad > 0) {
+	        numStr = '0'.repeat(zerosToPad) + numStr;
+	    }
+	    return numStr;
+	}
+	let totalmsec=ref(5000)
+	let sec=computed(()=>Math.floor(totalmsec.value/1000))
+	let msec=computed(()=>totalmsec.value%1000)
+	let timerdelay:number=2;
+	let intervalID:number=-1
+	let tid=-1;
+	let settingtime=totalmsec.value;
+	let isStart=false;
+	let firsttouch=true;
+	let showsec=computed(()=>padWithZeros(sec.value as number,2));
+	let showmsec=computed(()=>padWithZeros(msec.value as number ,3));
+
+function stop()
+{
+	clearInterval(intervalID);
+	return true;
+}
+function playaudio(url:string)
+{  
+	let audio=uni.createInnerAudioContext();
+	audio.src=(url)
+	console.log(1)
+	//audio.autoplay=true;
+	audio.play()
+	audio.onEnded(()=>
+	{
+		audio.destroy()
+	})
+}
+function start()
+{
+	isStart=!isStart;
+	
+	if(firsttouch)
+	{
+		if(totalmsec.value<=0)
+		{
+			totalmsec.value=settingtime;
+		}
+		console.log(3)
+	  playaudio('/static/voice/计时开始了呦.wav')
+	  firsttouch=false
+	}
+	else{
+		
+	
+	}
+	if(isStart)
+	{intervalID=setInterval(
+	()=>{
+	totalmsec.value=totalmsec.value-timerdelay>=0?totalmsec.value-timerdelay:0;
+
+	if(totalmsec.value==0)
+	{
+			stop()
+			console.log(1)
+			 if (tid != -1) {
+			    clearTimeout(tid) 
+			}
+			tid=setTimeout(()=>{playaudio('/static/voice/计时结束.wav')},50)
+		
+			firsttouch=true;
+			isStart=false;
+			return
+	}
+	
+	}
+	,timerdelay);}
+	else
+	{if(!firsttouch){
+		playaudio('/static/voice/暂停.wav')
+		}
+		clearInterval(intervalID);}
+}
+
+function changeTime()
+{
+	let op:ShowModalOptions={title:'修改时间（单位：秒）',
+	                         editable:true,
+							 fail:null,
+							 success:(res)=>{
+								 if(res.cancel)
+								 {return}
+								 console.log('我成功了');
+								let content=res.content?.trim();
+								let a=parseInt(content!)
+								if(a==NaN||a<0)
+								{
+									uni.showToast({
+									          title: "请输入正整数",
+											  icon:'none',
+											  position:'bottom'
+									        })
+									return
+								}
+								else{
+									totalmsec.value=a*1000;
+									settingtime=a*1000;
+								}
+							
+							 },
+							 
+							 };
+	let a=uni.showModal(op)
+	
+}
+</script>
+
+<style lang="scss">
+	@font-face {
+	  font-family: '像素字';
+	  src:url('../static/锐字太空奇遇像素.ttf');
+	}
+.timer{
+height:100%;
+		width: 100%;
+		  background: linear-gradient(to bottom,#000000, #1A1A1A); 
+		  z-index: -1;
+		   display: flex;
+		    flex-direction: column;
+			align-items: center;
+			justify-content:center;
+			flex-wrap: wrap;
+			.Exit{
+					  z-index: 1;
+					  position: fixed;
+					  //background-color: firebrick;
+					  margin-left:5% ;
+					  margin-top:3%;
+					  width: 100px;
+					  height: 50px;
+					  .ExitText{
+						  font-family: '像素字';
+						  color: white;
+						  font-size: 30px;
+						  text-align: left;
+					  }
+					
+					  z-index: 200;
+			}
+	.timertext
+	{
+		  font-family: '像素字';
+		font-size: 50px;
+		color: wheat;
+	}
+	.settimertext
+	{
+		  font-family: '像素字';
+		font-size: 35px;
+		color: white;
+		z-index: 1;
+		position: fixed;
+		//background-color: firebrick;
+		right: 30px;
+		bottom: 5px;
+		//margin-right:5% ;
+		margin-top:4%;
+		//width: 100px;
+		height: 50px;
+	}
+}
+</style>

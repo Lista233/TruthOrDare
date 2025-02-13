@@ -1,0 +1,238 @@
+<template>
+<view class="demo2">
+	<navigator open-type="navigateBack" animation-type="pop-out" url='/pages/index/index' class="Exit"><text selectable="false" class="ExitText" >< 返回</text></navigator>
+    <view class="sel" @click="showList()"><text class="selText">当前列表:{{curshow}}</text></view>
+	<view class="showtext"    @click="roll()" >
+	   <view class="textbox">
+	   <text class='textcontent' :class="{'textcontentchange':textChange}" selectable="false" >{{showView}}</text>
+	   </view>
+	</view>
+</view>
+</template>
+
+<script setup>
+	import {watch,ref} from 'vue'
+	let firstStart=ref(true);
+	let keylist=uni.getStorageInfoSync().keys;
+	let curshow=ref(keylist[0])
+	let list=uni.getStorageSync(curshow.value) as Array<string>		
+	let wordList=ref(list)
+	let showView=ref('Press Start')
+	let flag=false
+	let timerid:number=0;
+	let index=0;
+	let textChange=ref(false);
+	let isClicked=ref(false)
+	let radlist=getApp().globalData.randomlist;
+	function playaudio(url:string)
+	{  
+		let audio=uni.createInnerAudioContext();
+		audio.src=(url)
+		console.log(1)
+		//audio.autoplay=true;
+		audio.play()
+		audio.onEnded(()=>
+		{
+			audio.destroy()
+		})
+	}
+	onHide(()=>{
+		console.log('hide');
+		flag=false;
+		clearInterval(timerid);
+	})
+	onUnload(()=>
+	{
+		console.log('unload');
+		flag=false;
+		clearInterval(timerid);
+	})
+	
+	function roll()
+	{
+		if(firstStart.value)
+		{
+			firstStart.value=!firstStart.value
+		}
+		console.log(1)
+		flag=!flag
+		isClicked.value=flag
+		if(flag)
+		{
+			playaudio('/static/voice/开始.wav')
+			timerid=setInterval(
+			()=>{
+				console.log(index)
+				index=(index+1)%wordList.value.length
+				showView.value=wordList.value[index]
+				//console.log(showView.value)
+			}
+			,100)
+		}
+		else
+		{
+			
+		 if(radlist.length>=wordList.value.length)
+		 {radlist.length=0}
+			clearInterval(timerid);
+			let rad=Math.floor( Math.random()*wordList.value.length)
+			 while(radlist.includes(rad)){rad=(rad+1)%wordList.value.length}
+			 console.log(radlist)
+			 console.log('rad:'+rad)
+			showView.value=wordList.value[rad]
+			textChange.value=true;
+			console.log('index:'+rad+'value:'+wordList.value[rad])
+			radlist.push(rad)
+			playaudio('/static/voice/抽取结束.wav')
+			setTimeout(()=>{
+			textChange.value=false;
+			},100)
+		
+		}
+	}
+function showList()
+{
+	
+	let op:ShowActionSheetOptions={
+	  //title:'词条选项',
+	  itemList:keylist,
+	  success:(res)=>{
+		  curshow.value=keylist[res.tapIndex!]
+		  wordList.value=uni.getStorageSync(curshow.value) as Array<string>
+	  }
+	
+	}
+	uni.showActionSheet(op);
+}
+
+</script>
+
+<style lang="scss" scoped>
+	@font-face {
+	  font-family: '像素字';
+	  src:url('../static/锐字太空奇遇像素.ttf');
+	}
+.demo2{
+	height:100%;
+	width: 100%;
+	  background: linear-gradient(to bottom,#000000, #1A1A1A); 
+	  display: flex;
+	  align-items: center;
+	  justify-content: center;
+	  z-index: -1;
+	
+	  .Exit{
+		  z-index: 1;
+		  position: fixed;
+		  //background-color: firebrick;
+		  margin-left:6% ;
+		  margin-top:4%;
+		  width: 100px;
+		  height: 50px;
+		  .ExitText{
+			  font-family: '像素字';
+			  color: white;
+			  font-size: 30px;
+			  text-align: center;
+		  }
+		
+		  z-index: 200;
+	  }
+	  .sel{
+	  		  z-index: 1;
+	  		  position: fixed;
+	  		  //background-color: firebrick;
+	  		  right:29% ;
+	  		  margin-top:3%;
+	  		  width: 300px;
+	  		  height: 50px;
+	  		  .selText{
+	  			  font-family: '像素字';
+	  			  color: white;
+	  			  font-size: 30px;
+	  			  text-align: center;
+	  		  }
+	  }
+	.showtext{
+		transition-duration: 500ms;
+		transition-property: transform;
+		height:200px;
+		width: 600px;
+		
+	  
+		//box-sizing: border-box;
+		border: 5px solid  #1A1A1A;
+		    border-radius: 20px 50px; 
+		box-shadow: 4px 3px 4px  #e91e63;
+		
+		position: relative;
+		
+
+		
+		
+		.textbox{
+				position: absolute;
+			//box-sizing: border-box;
+			width: 100%;
+			height: 100%;
+	     	display: flex;
+			justify-content: center;
+			align-content: center;
+			
+			.textcontent{
+					position: absolute;
+						box-sizing: border-box;
+					    width: 100%;
+						max-height: 500px;
+						color: white;
+						line-height: 50px;
+						font-family: '像素字';
+						//text-wrap: wrap;
+						font-size: 45px;
+						text-align: center;
+						transition-property: transform,opacity;
+						transition-duration:700ms;
+							opacity: 1;
+						transition-delay:0ms;
+						transition-timing-function:ease-out;
+				}
+			.textcontentchange{
+					position: absolute;
+						box-sizing: border-box;
+					    width: 100%;
+						max-height: 500px;
+						line-height: 45px;
+						font-family: '像素字';
+						//text-wrap: wrap;						
+						text-align: center;
+						opacity: 0.5;
+						transition-property: transform;
+						transition-duration:50ms;
+						transition-delay:0ms;
+						transition-timing-function:ease-out;
+						transform: scale(1.6,1.6);
+				}
+				
+		}
+	.showtextHover{
+		transition-duration: 500ms;
+		height:200px;
+		width: 600px;
+			
+			
+			  
+		//box-sizing: border-box;
+		border: 5px solid  #1A1A1A;
+		    border-radius: 20px 50px; 
+		box-shadow: 4px 3px 4px  #e91e63;
+		
+		position: relative;
+		width: 100%;
+		height: 100%;
+		background-color: #e91e63;
+		transform: scale(0.8,0.8);
+		}
+	}
+
+}
+</style>

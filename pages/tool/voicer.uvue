@@ -1,0 +1,200 @@
+<template>
+	<view class="index">
+		<navigator open-type="navigateBack" animation-type="pop-out" url='/pages/index/index' class="Exit"><text selectable="false" class="ExitText" >< 返回</text></navigator>
+	
+		<view class="menubox">
+			
+			<view  class="menunav"  @click="switchplay('/static/voice/杂鱼杂鱼4.WAV',1880,'repd')">
+		
+			<text class="menutext">
+		    杂鱼杂鱼(循环)
+			</text>
+			</view>
+	  
+			<view class="menunav"  @click="switchplay('/static/voice/uno2.wav',1880,'sig')">
+				
+			<text class="menutext">
+			UNO!
+			</text>
+			</view>
+	
+		</view>
+	</view>
+</template>
+
+<script setup>
+	let audiolist:Array<InnerAudioContext>=[];
+	let timeidlist:Array<number>=[];
+	function playAudioReapeat(url:string)
+	{
+		let audio=uni.createInnerAudioContext();
+		audio.src=(url)
+		audiolist.push(audio);
+		console.log(1)
+		//audio.autoplay=true;
+		audio.play()
+		audio.loop=true;
+		audio.onEnded(()=>
+		{
+			audiolist.shift()
+			audio.destroy()
+		})
+	}
+
+	function playAudioReapeatByDelay(url:string,delay:number)
+	{
+		let audio=uni.createInnerAudioContext();
+		audiolist.push(audio);
+		audio.src=(url)
+		audio.play()
+		audio.onEnded(()=>
+		{
+			audiolist.shift()
+			audio.destroy()
+		})
+	let i=setInterval(()=>
+		{
+			let audio=uni.createInnerAudioContext();
+			audio.src=(url)
+			audiolist.push(audio);
+			audio.play()
+			audio.onEnded(()=>
+			{
+				audiolist.shift()
+				audio.destroy()
+			})
+		},delay)
+	timeidlist.push(i)
+		
+	
+	}
+	function playaudio(url:string)
+	{   
+		let audio=uni.createInnerAudioContext();
+		audio.src=(url)
+		audiolist.push(audio);
+		console.log(1)
+		//audio.autoplay=true;
+		audio.play()
+		audio.onEnded(()=>
+		{
+			audiolist.shift()
+			audio.destroy()
+		})
+	}
+	function stopall()
+	{
+		audiolist.forEach((audio:InnerAudioContext)=>{audio.destroy()})
+		timeidlist.forEach((timeid:number)=>{clearInterval(timeid)})
+	}
+	let flag=false;
+	function switchplay(url:string,delay:number,method:string)
+	{
+		
+		flag=!flag;
+		if(flag)
+		{
+			if(method=='repd'){playAudioReapeatByDelay(url,delay)}
+			else if(method=='sig'){playaudio(url)}
+			else if(method=='rep'){playAudioReapeat(url)}
+		}
+		else{
+			stopall()
+		}
+	}
+	onUnload(()=>{
+		stopall();
+		})
+</script>
+
+<style lang="scss" scoped>
+	@font-face {
+	  font-family: '像素字';
+	  src:url('../static/锐字太空奇遇像素.ttf');
+	}
+	.index{
+		height:100%;
+		width: 100%;
+		  background: linear-gradient(to bottom,#000000, #1A1A1A); 
+		  z-index: -1;
+		   display: flex;
+		    flex-direction: column;
+			align-items: center;
+			justify-content:center;
+			flex-wrap: wrap;
+		.Exit{
+				  z-index: 1;
+				  position: fixed;
+				  //background-color: firebrick;
+				  margin-left:5% ;
+				  margin-top:3%;
+				  width: 100px;
+				  height: 50px;
+				  .ExitText{
+					  font-family: '像素字';
+					  color: white;
+					  font-size: 30px;
+					  text-align: left;
+				  }
+				
+				  z-index: 200;
+		}
+
+		  .menubox{
+			 
+			  height: 85%;
+			  width: 75%;
+			  
+			 // background-color: white;
+			  display: flex;
+			  flex-direction: row;
+			  justify-content: space-around;
+			  align-items: center;
+			   border-radius: 15px;
+			   flex-wrap: wrap;
+			   border: 1px solid  #1A1A1A;
+	
+				  .menunav{
+					 // max-width: 250px;
+					 //padding-top:40px ;
+					 border-radius: 35px;
+					  //margin-left: 10px;
+					  //margin-right: 10px;
+					  max-width: 150px;
+					  min-width: 150px;
+					  height: 40%;
+					  //background-color: wheat;
+					 // min-width:400px ;
+					  border: 3px solid  #e91e63;
+					  box-sizing: border-box;
+					  //box-shadow: 1px 1px 1px  #e91e63;
+					  flex: 1;
+					   text-align: center;
+					   flex-direction: column;
+					   justify-content: center;
+					   align-items: center;
+					  .menutext{
+						  //left:5px;
+						//  background-color: wheat;
+						  text-wrap: wrap;
+						  font-size: 30rpx;
+						  text-align: center;
+						  color:#e91e63;
+						  font-family: '像素字';
+					  }
+					
+				  }
+			  
+		  }
+		
+	}
+	.menutitle{
+		transform: translateY(-25%) translateX(-3%);
+		max-height: 50px;
+		font-size: 50px;
+		text-align: center;
+		//background-color: #e91e63;
+		color: white;
+		font-family: '像素字';
+	}
+</style>
